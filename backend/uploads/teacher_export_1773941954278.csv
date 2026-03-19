@@ -1,0 +1,67 @@
+REG NO,STUDENT NAME,SUBJECT,ASSIGNMENT,STATUS,MARKS,MAX MARKS
+357,Adi,Algorithms,Algorithms Implementation,on-time,17,20
+353,Amma,Algorithms,Algorithms Implementation,on-time,14,20
+354,Appus,Algorithms,Algorithms Implementation,on-time,18,20
+360,Dikku,Algorithms,Algorithms Implementation,on-time,8,20
+355,Dumku,Algorithms,Algorithms Implementation,on-time,15,20
+366,Dumku,Algorithms,Algorithms Implementation,on-time,15,20
+358,Harini,Algorithms,Algorithms Implementation,on-time,15,20
+351,Jahn,Algorithms,Algorithms Implementation,on-time,19,20
+,Jahnavi,Algorithms,Advanced Algorithms Topics,on-time,,20
+352,Jyo,Algorithms,Algorithms Implementation,on-time,17,20
+359,Kutty,Algorithms,Algorithms Implementation,on-time,16,20
+368,Manoj,Algorithms,Algorithms Implementation,on-time,15,20
+361,Meghu,Algorithms,Algorithms Implementation,on-time,6,20
+364,Nani,Algorithms,Algorithms Implementation,on-time,17,20
+365,Pooja,Algorithms,Algorithms Implementation,on-time,13,20
+359,Ravi,Algorithms,Algorithms Implementation,on-time,7,20
+357,Adi,Computer Networks,Computer Networks Implementation,on-time,12,20
+362,Anju,Computer Networks,Computer Networks Implementation,on-time,9,20
+360,Dikku,Computer Networks,Computer Networks Implementation,on-time,7,20
+366,Dumku,Computer Networks,Computer Networks Implementation,on-time,11,20
+358,Harini,Computer Networks,Computer Networks Implementation,on-time,12,20
+367,Kavya,Computer Networks,Computer Networks Implementation,on-time,10,20
+368,Manoj,Computer Networks,Computer Networks Implementation,on-time,10,20
+361,Meghu,Computer Networks,Computer Networks Implementation,on-time,12,20
+364,Nani,Computer Networks,Computer Networks Implementation,on-time,16,20
+365,Pooja,Computer Networks,Computer Networks Implementation,on-time,7,20
+359,Ravi,Computer Networks,Computer Networks Implementation,on-time,11,20
+369,Riya,Computer Networks,Computer Networks Implementation,on-time,16,20
+357,Adi,Data Structures,Data Structures Implementation,on-time,16,20
+,Adi,Data Structures,Advanced Data Structures Topics,on-time,,20
+353,Amma,Data Structures,Data Structures Implementation,on-time,15,20
+362,Anju,Data Structures,Data Structures Implementation,on-time,16,20
+354,Appus,Data Structures,Data Structures Implementation,on-time,19,20
+355,Dumku,Data Structures,Data Structures Implementation,on-time,14,20
+366,Dumku,Data Structures,Data Structures Implementation,on-time,11,20
+358,Harini,Data Structures,Data Structures Implementation,on-time,17,20
+351,Jahn,Data Structures,Data Structures Implementation,on-time,18,20
+352,Jyo,Data Structures,Data Structures Implementation,on-time,16,20
+359,Kutty,Data Structures,Data Structures Implementation,on-time,17,20
+368,Manoj,Data Structures,Data Structures Implementation,on-time,10,20
+364,Nani,Data Structures,Data Structures Implementation,on-time,12,20
+359,Ravi,Data Structures,Data Structures Implementation,on-time,10,20
+369,Riya,Data Structures,Data Structures Implementation,on-time,16,20
+357,Adi,Database Management Systems,Database Management Systems Implementation,on-time,7,20
+353,Amma,Database Management Systems,Database Management Systems Implementation,on-time,16,20
+362,Anju,Database Management Systems,Database Management Systems Implementation,on-time,12,20
+354,Appus,Database Management Systems,Database Management Systems Implementation,on-time,19,20
+355,Dumku,Database Management Systems,Database Management Systems Implementation,on-time,17,20
+358,Harini,Database Management Systems,Database Management Systems Implementation,on-time,17,20
+351,Jahn,Database Management Systems,Database Management Systems Implementation,on-time,17,20
+352,Jyo,Database Management Systems,Database Management Systems Implementation,on-time,18,20
+367,Kavya,Database Management Systems,Database Management Systems Implementation,on-time,8,20
+359,Kutty,Database Management Systems,Database Management Systems Implementation,on-time,15,20
+364,Nani,Database Management Systems,Database Management Systems Implementation,on-time,6,20
+365,Pooja,Database Management Systems,Database Management Systems Implementation,on-time,7,20
+370,Sanjay,Database Management Systems,Database Management Systems Implementation,on-time,10,20
+,Adi,Maths,PQT Assignement,on-time,99,20
+359,Kutty,Maths,PQT Assignement,on-time,,20
+357,Adi,Operating Systems,Operating Systems Implementation,on-time,12,20
+362,Anju,Operating Systems,Operating Systems Implementation,on-time,14,20
+363,Divya,Operating Systems,Operating Systems Implementation,on-time,8,20
+366,Dumku,Operating Systems,Operating Systems Implementation,on-time,10,20
+367,Kavya,Operating Systems,Operating Systems Implementation,on-time,11,20
+368,Manoj,Operating Systems,Operating Systems Implementation,on-time,15,20
+361,Meghu,Operating Systems,Operating Systems Implementation,on-time,7,20
+359,Ravi,Operating Systems,Operating Systems Implementation,on-time,15,20

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - NexGen DBMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <script src="../js/components.js"></script>
+    <script>
+        if (localStorage.getItem('role_id') !== '1') {
+            window.location.href = 'login.html';
+        }
+        createNavbar('Admin Portal');
+    </script>
+
+    <div class="container">
+        <!-- Stats summary -->
+        <div class="grid grid-cols-2 mb-8" id="statsGrid">
+            <div class="glass-card">
+                <h3>Total Accounts</h3>
+                <h1 id="statUsers" style="font-size: 3rem; color: var(--primary);">0</h1>
+            </div>
+            <div class="glass-card">
+                <h3>Assignments Created</h3>
+                <h1 id="statAssignments" style="font-size: 3rem; color: var(--secondary);">0</h1>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3 mb-8">
+            <div class="glass-card" style="grid-column: span 2;">
+                <div class="flex justify-between items-center mb-4">
+                    <h3>User Management</h3>
+                    <button class="btn btn-primary" onclick="document.getElementById('createUserForm').style.display='block'">+ Add User</button>
+                </div>
+                
+                <div id="createUserForm" style="display: none; background: rgba(0,0,0,0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <form onsubmit="createUser(event)" class="flex gap-2 items-center flex-wrap">
+                        <input type="text" id="newUserName" class="form-control" placeholder="Name" style="flex:1; min-width:150px;" required>
+                        <input type="email" id="newUserEmail" class="form-control" placeholder="Email" style="flex:1; min-width:150px;" required>
+                        <input type="password" id="newUserPass" class="form-control" placeholder="Password" style="flex:1; min-width:150px;" required>
+                        <select id="newUserRole" class="form-control" style="width:auto;" required>
+                            <option value="1">Admin</option>
+                            <option value="2">Teacher</option>
+                            <option value="3">Student</option>
+                        </select>
+                        <button type="submit" class="btn btn-success">Save</button>
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('createUserForm').style.display='none'">Cancel</button>
+                    </form>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="glass-card flex-col gap-4" style="display: flex;">
+                <h3>System Data & Backup</h3>
+                
+                <div class="mb-4">
+                    <h4>Export Data (CSV)</h4>
+                    <div class="flex flex-col gap-2 mt-2">
+                        <button class="btn btn-outline w-full" onclick="exportCSV('users')">Download Users.csv</button>
+                        <button class="btn btn-outline w-full" onclick="exportCSV('assignments')">Download Assignments.csv</button>
+                        <button class="btn btn-outline w-full" onclick="exportCSV('submissions')">Download Submissions.csv</button>
+                    </div>
+                </div>
+
+                <div class="mb-4" style="border-top: 1px solid var(--border); padding-top: 1rem;">
+                    <h4>System Backup</h4>
+                    <p style="font-size: 0.85rem;" class="mb-2 text-muted">Download a live snapshot of the SQLite database.</p>
+                    <button class="btn btn-primary w-full" onclick="downloadBackup()">Create & Download SQL Backup</button>
+                </div>
+
+                <div style="border-top: 1px solid var(--border); padding-top: 1rem;">
+                    <h4>System Restore</h4>
+                    <p style="font-size: 0.85rem;" class="mb-2 text-danger">Warning: This will overwrite the entire database instantly.</p>
+                    <form onsubmit="restoreDB(event)">
+                        <input type="file" id="restoreFile" accept=".sqlite,.db" required class="form-control mb-2" style="font-size: 0.85rem; padding: 0.5rem;">
+                        <button type="submit" class="btn btn-danger w-full">Restore Database</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h3>Recent Activity Logs</h3>
+            <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>User Name</th>
+                            <th>Action Type</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadDashboard() {
+            try {
+                // Stats
+                const stats = await fetchAPI('/dashboard-summary');
+                document.getElementById('statUsers').textContent = stats.total_users || 0;
+                document.getElementById('statAssignments').textContent = stats.total_assignments || 0;
+
+                // Users
+                const users = await fetchAPI('/admin/users');
+                const roles = {1: '<span class="badge badge-primary">Admin</span>', 2: '<span class="badge badge-warning">Teacher</span>', 3: '<span class="badge badge-success">Student</span>'};
+                document.getElementById('usersTable').innerHTML = users.map(u => `
+                    <tr>
+                        <td>${u.name}</td>
+                        <td>${u.email}</td>
+                        <td>${roles[u.role_id] || 'Unknown'}</td>
+                        <td><span class="badge ${u.status==='active'?'badge-success':'badge-danger'}">${u.status}</span></td>
+                        <td>
+                            ${u.role_id !== 1 || users.filter(x=>x.role_id===1).length > 1 ? 
+                            `<button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="deleteUser(${u.id})">Delete</button>` 
+                            : '<span class="text-muted" style="font-size:0.75rem;">Primary</span>'}
+                        </td>
+                    </tr>
+                `).join('');
+
+                // Logs
+                const logs = await fetchAPI('/admin/logs');
+                document.getElementById('logsTable').innerHTML = logs.map(l => `
+                    <tr>
+                        <td style="font-size: 0.85rem; color: var(--text-muted);">${new Date(l.created_at).toLocaleString()}</td>
+                        <td style="font-weight: 500;">${l.user_name || 'System'}</td>
+                        <td><span class="badge badge-secondary" style="background: var(--border); color: var(--text-main);">${l.action}</span></td>
+                        <td style="color: var(--text-muted);">${l.details}</td>
+                    </tr>
+                `).join('');
+
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        async function createUser(e) {
+            e.preventDefault();
+            try {
+                await fetchAPI('/admin/users', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        name: document.getElementById('newUserName').value,
+                        email: document.getElementById('newUserEmail').value,
+                        password: document.getElementById('newUserPass').value,
+                        role_id: parseInt(document.getElementById('newUserRole').value)
+                    })
+                });
+                showToast('User created successfully');
+                document.getElementById('createUserForm').style.display = 'none';
+                loadDashboard();
+            } catch (err) { showToast(err.message, 'error'); }
+        }
+
+        async function deleteUser(id) {
+            if (!confirm('Are you sure you want to delete this user completely?')) return;
+            try {
+                await fetchAPI(`/admin/users/${id}`, { method: 'DELETE' });
+                showToast('User deleted');
+                loadDashboard();
+            } catch (err) { showToast(err.message, 'error'); }
+        }
+
+        function exportCSV(table) {
+            const token = localStorage.getItem('token');
+            showToast(`Generating ${table} CSV...`);
+            fetch(`${API_URL}/admin/export/${table}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${table}_export.csv`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                showToast(`${table} exported!`);
+                loadDashboard();
+            })
+            .catch(err => showToast('Export failed', 'error'));
+        }
+
+        function downloadBackup() {
+            const token = localStorage.getItem('token');
+            showToast('Generating SQLite DB snapshot...');
+            fetch(`${API_URL}/admin/backup`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `database_backup_${Date.now()}.sqlite`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                showToast('Backup downloaded successfully!');
+                loadDashboard();
+            })
+            .catch(err => showToast('Backup failed', 'error'));
+        }
+
+        async function restoreDB(e) {
+            e.preventDefault();
+            if (!confirm('This will OVERWRITE the entire database and may cause you to be logged out. Are you absolutely sure?')) return;
+            
+            const file = document.getElementById('restoreFile').files[0];
+            const formData = new FormData();
+            formData.append('dbfile', file);
+            
+            const btn = e.target.querySelector('button');
+            btn.innerHTML = 'Restoring...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_URL}/admin/restore`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                    body: formData
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Restore failed');
+                
+                showToast(data.message);
+                setTimeout(() => window.location.reload(), 2000);
+            } catch (err) {
+                showToast(err.message, 'error');
+                btn.innerHTML = 'Restore Database';
+                btn.disabled = false;
+            }
+        }
+
+        loadDashboard();
+    </script>
+</body>
+</html>

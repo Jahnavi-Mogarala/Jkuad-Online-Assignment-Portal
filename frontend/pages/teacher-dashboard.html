@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - NexGen DBMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .assignment-card { cursor: pointer; border-left: 4px solid transparent; }
+        .assignment-card:hover { border-left-color: var(--primary); }
+        .assignment-card.active { border-left-color: var(--primary); background: rgba(37, 99, 235, 0.05); }
+    </style>
+</head>
+<body>
+    <script src="../js/components.js"></script>
+    <script>
+        if (localStorage.getItem('role_id') !== '2') {
+            window.location.href = 'login.html';
+        }
+        createNavbar('Teacher Portal');
+    </script>
+
+    <div class="container">
+        <!-- Stats -->
+        <div class="grid grid-cols-3 mb-4">
+            <div class="glass-card text-center" style="padding: 1rem;">
+                <p class="text-muted mb-1" style="font-size:0.8rem; text-transform:uppercase;">Assignments Created</p>
+                <h2 id="statAssignments" style="color: var(--primary);">0</h2>
+            </div>
+            <div class="glass-card text-center" style="padding: 1rem;">
+                <p class="text-muted mb-1" style="font-size:0.8rem; text-transform:uppercase;">Total Submissions</p>
+                <h2 id="statSubmissions" style="color: var(--secondary);">0</h2>
+            </div>
+            <div class="glass-card text-center" style="padding: 1rem;">
+                <p class="text-muted mb-1" style="font-size:0.8rem; text-transform:uppercase;">Avg Marks Given</p>
+                <h2 id="statAvgMarks" style="color: var(--success);">0</h2>
+            </div>
+        </div>
+
+        <!-- Smart Class Insights -->
+        <div class="grid grid-cols-1 mb-8">
+            <div class="glass-card flex-col" id="analyticsPanel" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2);">
+                <h3 class="mb-4 text-center">🧠 Smart Class Insights</h3>
+                <div class="grid grid-cols-4 gap-4" style="text-align: center;">
+                    <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; border-bottom: 2px solid var(--warning);">
+                        <div class="text-warning" style="font-size: 0.75rem; text-transform: uppercase; font-weight:600;">Class Topper 🏆</div>
+                        <strong id="insightTopper" style="font-size: 1.2rem; color: var(--text-main);">Loading...</strong>
+                    </div>
+                    <div style="background: rgba(239,68,68,0.1); padding: 1rem; border-radius: 8px; border-bottom: 2px solid var(--danger);">
+                        <div class="text-danger" style="font-size: 0.75rem; text-transform: uppercase; font-weight:600;">Critical Risk (<40%)</div>
+                        <strong id="insightLowScorers" style="font-size: 1.2rem; color: var(--danger);">0</strong>
+                    </div>
+                    <div style="background: rgba(16,185,129,0.1); padding: 1rem; border-radius: 8px; border-bottom: 2px solid var(--success);">
+                        <div class="text-success" style="font-size: 0.75rem; text-transform: uppercase; font-weight:600;">Top Performers (>80%)</div>
+                        <strong id="insightTopScorers" style="font-size: 1.2rem; color: var(--success);">0</strong>
+                    </div>
+                    <div style="background: rgba(245,158,11,0.1); padding: 1rem; border-radius: 8px; border-bottom: 2px solid var(--warning);">
+                        <div class="text-warning" style="font-size: 0.75rem; text-transform: uppercase; font-weight:600;">Overdue / Missing</div>
+                        <strong id="insightMissing" style="font-size: 1.2rem; color: var(--warning);">0</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3">
+            <!-- Left Column: Assignments List & Creation -->
+            <div class="glass-card flex-col gap-4" style="grid-column: span 1; display:flex;">
+                <div class="flex justify-between items-center mb-4">
+                    <h3>My Assignments</h3>
+                    <div class="flex gap-2">
+                        <button class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="exportResults()">Export CSV</button>
+                        <button class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="toggleAddForm()">+ New</button>
+                    </div>
+                </div>
+
+                <!-- Create Form -->
+                <div id="createAssignmentForm" style="display: none; background: rgba(0,0,0,0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <form onsubmit="createAssignment(event)">
+                        <div class="form-group mb-2">
+                            <input type="text" id="assignTitle" class="form-control" placeholder="Assignment Title" required>
+                        </div>
+                        <div class="form-group mb-2">
+                            <input type="text" id="assignSubject" class="form-control" placeholder="Subject" required>
+                        </div>
+                        <div class="form-group mb-2">
+                            <textarea id="assignDesc" class="form-control" placeholder="Description Instructions..." rows="3"></textarea>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label class="form-label" style="font-size: 0.8rem;">Due Date & Time</label>
+                            <input type="datetime-local" id="assignDue" class="form-control" required>
+                        </div>
+                        <div class="form-group mb-2 flex items-center gap-2">
+                            <input type="checkbox" id="assignImportant">
+                            <label for="assignImportant" style="font-size: 0.9rem;">Mark as Important</label>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="form-label" style="font-size: 0.8rem;">Attach File/Rubric (Optional)</label>
+                            <input type="file" id="assignFile" class="form-control" style="font-size: 0.8rem; padding: 0.5rem;">
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="submit" class="btn btn-success w-full">Create</button>
+                            <button type="button" class="btn btn-secondary w-full" onclick="toggleAddForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- List -->
+                <div id="assignmentsList" style="flex:1; overflow-y:auto; max-height:500px; display:flex; flex-direction:column; gap:0.5rem;">
+                    <p class="text-center text-muted">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Right Column: Submissions for Selected Assignment -->
+            <div class="glass-card" style="grid-column: span 2;">
+                <div id="submissionsHeader" class="mb-4">
+                    <h3>Submissions Explorer</h3>
+                    <p class="text-muted">Select an assignment to view its submissions.</p>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table id="submissionsTable" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Submitted At</th>
+                                <th>Status</th>
+                                <th>Files</th>
+                                <th>Grade/Feedback</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="submissionsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grade Modal -->
+    <div id="gradeModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+        <div class="glass-card" style="width: 400px; background: var(--bg-color);">
+            <h3 class="mb-4">Grade Submission</h3>
+            <form onsubmit="submitGrade(event)">
+                <input type="hidden" id="gradeSubId">
+                <div class="form-group">
+                    <label class="form-label">Marks (out of 100)</label>
+                    <input type="number" id="gradeMarks" class="form-control" required min="0" max="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teacher Feedback</label>
+                    <textarea id="gradeFeedback" class="form-control" rows="4" required placeholder="Provide clear feedback..."></textarea>
+                </div>
+                <div class="flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary w-full">Save Grade</button>
+                    <button type="button" class="btn btn-secondary w-full" onclick="document.getElementById('gradeModal').style.display='none'">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentAssignmentId = null;
+        let activeSubmissions = []; // Global cache for current view to avoid onclick attribute breaking
+
+        async function loadDashboard() {
+            try {
+                const stats = await fetchAPI('/teacher/stats');
+                document.getElementById('statAssignments').textContent = stats.total_assignments || 0;
+                document.getElementById('statSubmissions').textContent = stats.total_submissions || 0;
+                document.getElementById('statAvgMarks').textContent = stats.average_marks || 0;
+
+                loadAssignments();
+                loadAnalytics();
+                loadStudentsDirectory();
+                loadRecentSubmissions(); // Load global activity by default
+            } catch (err) { showToast(err.message, 'error'); }
+        }
+
+        async function loadRecentSubmissions() {
+            if (currentAssignmentId) return; // Don't override the specific view if one is selected
+            try {
+                // We'll add a global endpoint for this or reuse an existing one with filters
+                const subs = await fetchAPI('/teacher/recent-submissions'); 
+                const table = document.getElementById('submissionsTable');
+                const tbody = document.getElementById('submissionsTableBody');
+                const header = document.getElementById('submissionsHeader');
+                
+                header.innerHTML = `
+                    <h3>Recent Global Activity</h3>
+                    <p class="text-muted">Live feed of all latest submissions across all your assignments.</p>
+                `;
+                
+                if (subs.length === 0) {
+                    table.style.display = 'none';
+                    header.innerHTML += '<div class="glass-card mt-4 text-center"><p class="text-muted">No student activity detected yet.</p></div>';
+                    return;
+                }
+                
+                table.style.display = 'table';
+                activeSubmissions = subs; // Store globally
+                renderSubmissionsTable(subs);
+            } catch (err) { console.error('Failed to load recent submissions:', err); }
+        }
+
+        function renderSubmissionsTable(subs) {
+            const tbody = document.getElementById('submissionsTableBody');
+            tbody.innerHTML = subs.map(s => {
+                let filesHtml = '';
+                if (s.files && s.files.length > 0) {
+                    filesHtml = s.files.map((file, i) => `<a href="${file}" target="_blank" class="badge badge-primary mb-1 inline-block" style="text-decoration:none;">${s.file_names[i] || 'File'}</a>`).join('<br>');
+                } else {
+                    filesHtml = '<span class="text-muted">No files</span>';
+                }
+
+                return `
+                <tr>
+                    <td>
+                        <div style="font-weight:600;">${s.student_name}</div>
+                        <div style="font-size:0.75rem; color:var(--primary); font-weight:500;">${s.assignment_title || 'General'}</div>
+                    </td>
+                    <td style="font-size:0.85rem;">${new Date(s.submitted_at).toLocaleString()}</td>
+                    <td><span class="badge ${s.status === 'on-time' ? 'badge-success' : 'badge-danger'}">${s.status.toUpperCase()}</span></td>
+                    <td>${filesHtml}</td>
+                    <td>
+                        ${s.graded_marks !== null ? 
+                            `<strong style="color:var(--success); font-size: 1.1rem;">${s.graded_marks}/100</strong>` 
+                            : '<span class="badge badge-warning">Pending</span>'}
+                    </td>
+                    <td>
+                        <button class="btn btn-outline" style="padding: 0.35rem 0.6rem; font-size: 0.8rem;" onclick="readyGradeModal(${s.id})">
+                            Grade
+                        </button>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        async function loadStudentsDirectory() {
+            try {
+                const students = await fetchAPI('/teacher/students');
+                const tbody = document.getElementById('studentsTableBody');
+                if (students.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No students registered yet.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = students.map(s => `
+                    <tr>
+                        <td><span class="badge" style="background: rgba(225,29,72,0.1); color: var(--primary); border: 1px solid var(--primary);">${s.reg_no || 'N/A'}</span></td>
+                        <td style="font-weight: 600;">${s.name}</td>
+                        <td style="color: var(--text-muted); font-size: 0.85rem;">${s.email}</td>
+                        <td style="font-size: 0.85rem;">${new Date(s.joined_at).toLocaleDateString()}</td>
+                        <td><span class="badge ${s.submissions_count > 0 ? 'badge-success' : 'badge-warning'}">${s.submissions_count} Files</span></td>
+                    </tr>
+                `).join('');
+            } catch (err) { console.error('Failed to load students directory:', err); }
+        }
+
+        async function loadAnalytics() {
+            try {
+                const data = await fetchAPI('/teacher/analytics');
+                document.getElementById('insightTopper').textContent = data.topper;
+                document.getElementById('insightLowScorers').textContent = data.lowScorers + ' Students';
+                document.getElementById('insightTopScorers').textContent = data.topPerformers + ' Students';
+                document.getElementById('insightMissing').textContent = data.missingSubmissions + ' Missed';
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadAssignments() {
+            try {
+                const asg = await fetchAPI('/teacher/assignments');
+                const list = document.getElementById('assignmentsList');
+                if (asg.length === 0) {
+                    list.innerHTML = '<p class="text-center text-muted">No assignments created yet.</p>';
+                    return;
+                }
+                
+                list.innerHTML = asg.map(a => `
+                    <div class="assignment-card ${currentAssignmentId === a.id ? 'active' : ''}" style="padding: 1rem; border-radius: 8px; border: 1px solid var(--border);" onclick="viewSubmissions('${a.id}', '${a.title.replace(/'/g, "\\'")}')">
+                        <div class="flex justify-between items-center mb-1">
+                            <h4 style="margin:0; font-size:1rem;">${a.title}</h4>
+                            ${a.is_important ? '<span class="badge badge-warning" title="Important">★</span>' : ''}
+                        </div>
+                        <p style="margin:0; font-size:0.8rem; color:var(--text-muted);">${a.subject} • Due: ${new Date(a.due_date).toLocaleString()}</p>
+                    </div>
+                `).join('');
+                
+                if(!currentAssignmentId && asg.length > 0) {
+                    viewSubmissions(asg[0].id, asg[0].title);
+                }
+            } catch (err) { showToast(err.message, 'error'); }
+        }
+
+        function toggleAddForm() {
+            const form = document.getElementById('createAssignmentForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function exportResults() {
+            try {
+                showToast("Generating spreadsheet...", "info");
+                const res = await fetchAPI('/teacher/export-results');
+                
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `JKUAD_Grades_Export_${Date.now()}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+                showToast("Spreadsheet Export downloaded successfully!", "success");
+            } catch(e) { 
+                console.error(e);
+                showToast(e.message || "Export failed", 'error'); 
+            }
+        }
+
+        async function createAssignment(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('title', document.getElementById('assignTitle').value);
+            formData.append('subject', document.getElementById('assignSubject').value);
+            formData.append('description', document.getElementById('assignDesc').value);
+            formData.append('due_date', document.getElementById('assignDue').value);
+            formData.append('is_important', document.getElementById('assignImportant').checked);
+            
+            const fileInput = document.getElementById('assignFile');
+            if(fileInput.files[0]) {
+                formData.append('file', fileInput.files[0]);
+            }
+
+            const btn = e.target.querySelector('button.btn-success');
+            btn.innerHTML = 'Creating...';
+            btn.disabled = true;
+
+            try {
+                await fetchAPI('/teacher/assignments', { method: 'POST', body: formData });
+                showToast('Assignment created successfully');
+                toggleAddForm();
+                e.target.reset();
+                loadDashboard();
+            } catch (err) { 
+                showToast(err.message, 'error');
+            } finally {
+                btn.innerHTML = 'Create';
+                btn.disabled = false;
+            }
+        }
+
+        async function viewSubmissions(id, title) {
+            currentAssignmentId = id;
+            document.querySelectorAll('.assignment-card').forEach(c => c.classList.remove('active'));
+            const cards = Array.from(document.querySelectorAll('.assignment-card'));
+            
+            // Re-render assignments list softly sets active highlighting
+            for(let card of cards) {
+                if(card.innerHTML.includes(title)) card.classList.add('active');
+            }
+
+            document.getElementById('submissionsHeader').innerHTML = `
+                <h3>Submissions for \`${title}\`</h3>
+                <p class="text-muted">Review student work and provide feedback.</p>
+            `;
+            
+            try {
+                const subs = await fetchAPI(`/teacher/assignments/${id}/submissions`);
+                const table = document.getElementById('submissionsTable');
+                const tbody = document.getElementById('submissionsTableBody');
+                
+                if (subs.length === 0) {
+                    table.style.display = 'none';
+                    document.getElementById('submissionsHeader').innerHTML += '<div class="glass-card mt-4 text-center"><p class="text-muted">No submissions are visible yet. Wait for students to submit final copies.</p></div>';
+                    return;
+                }
+                
+                table.style.display = 'table';
+                activeSubmissions = subs; // Store globally
+                renderSubmissionsTable(subs);
+            } catch (err) { showToast(err.message, 'error'); }
+        }
+
+        function readyGradeModal(subId) {
+            const s = activeSubmissions.find(x => x.id === subId);
+            if (!s) return showToast('Submission data lost. Please refresh.', 'error');
+            
+            document.getElementById('gradeSubId').value = s.id;
+            document.getElementById('gradeMarks').value = s.graded_marks || '';
+            document.getElementById('gradeFeedback').value = s.teacher_feedback || '';
+            document.getElementById('gradeModal').style.display = 'flex';
+        }
+
+        async function submitGrade(e) {
+            e.preventDefault();
+            const subId = document.getElementById('gradeSubId').value;
+            const btn = e.target.querySelector('button.btn-primary');
+            
+            btn.innerHTML = 'Saving...';
+            btn.disabled = true;
+            
+            try {
+                await fetchAPI(`/teacher/grade/${subId}`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        marks: document.getElementById('gradeMarks').value,
+                        content: document.getElementById('gradeFeedback').value
+                    })
+                });
+                showToast('Graded successfully');
+                document.getElementById('gradeModal').style.display = 'none';
+                
+                // Refresh submissions
+                const activeWrapper = document.querySelector('.assignment-card.active');
+                if (activeWrapper && currentAssignmentId) {
+                    const titleEl = activeWrapper.querySelector('h4');
+                    viewSubmissions(currentAssignmentId, titleEl ? titleEl.textContent : 'Assignment');
+                }
+                loadDashboard();
+            } catch (err) { 
+                showToast(err.message, 'error');
+            } finally {
+                btn.innerHTML = 'Save Grade';
+                btn.disabled = false;
+            }
+        }
+
+        loadDashboard();
+        setInterval(loadDashboard, 30000); // Auto-refresh every 30 seconds
+    </script>
+</body>
+</html>

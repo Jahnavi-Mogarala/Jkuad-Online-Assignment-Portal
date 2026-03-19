@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - JKUAD Assignment Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div style="position: absolute; top: 1rem; right: 2rem;">
+        <button class="theme-toggle" onclick="toggleTheme()" style="background: var(--card-bg); box-shadow: var(--shadow);">🌓</button>
+    </div>
+
+    <div class="container" style="max-width: 450px; display: flex; flex-direction: column; justify-content: center; min-height: 100vh;">
+        
+        <div class="glass-card">
+            <div class="text-center mb-8">
+                <h1 class="nav-brand mb-2" style="font-size: 2rem; display: inline-block;">JKUAD</h1>
+                <p>Assignment Portal</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="loginEmail" class="form-control" required placeholder="name@example.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="loginPassword" class="form-control" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary w-full" id="loginBtn">Sign In</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="regName" class="form-control" required placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="regEmail" class="form-control" required placeholder="name@example.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Role</label>
+                    <select id="regRole" class="form-control" required onchange="document.getElementById('regNoGroup').style.display=this.value==='3'?'block':'none'">
+                        <option value="3">Student</option>
+                        <option value="2">Teacher</option>
+                    </select>
+                </div>
+                <div class="form-group" id="regNoGroup">
+                    <label class="form-label">Registration Number (Reg No)</label>
+                    <input type="text" id="regRegNo" class="form-control" placeholder="123456" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="regPassword" class="form-control" required placeholder="Create a password">
+                </div>
+                <button type="submit" class="btn btn-primary w-full" id="regBtn">Create Account</button>
+            </form>
+
+            <div class="text-center mt-4 pt-4" style="border-top: 1px solid var(--border);">
+                <button id="toggleFormBtn" class="btn btn-secondary w-full">Need an account? Register</button>
+            </div>
+            
+            <div class="text-center mt-4" style="font-size: 0.8rem; color: var(--text-muted);">
+                <p>Note: Admin accounts must be created directly via initialization scripts.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/components.js"></script>
+    <script>
+        let isLogin = true;
+        
+        document.getElementById('toggleFormBtn').addEventListener('click', () => {
+            isLogin = !isLogin;
+            document.getElementById('loginForm').style.display = isLogin ? 'block' : 'none';
+            document.getElementById('registerForm').style.display = isLogin ? 'none' : 'block';
+            document.getElementById('toggleFormBtn').textContent = isLogin ? 'Need an account? Register' : 'Already have an account? Sign In';
+            document.querySelector('.nav-brand').nextElementSibling.textContent = isLogin ? 'Welcome Back!' : 'Create your account';
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            btn.innerHTML = 'Authenticating...';
+            btn.disabled = true;
+
+            try {
+                const data = await fetchAPI('/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        email: document.getElementById('loginEmail').value,
+                        password: document.getElementById('loginPassword').value
+                    })
+                });
+
+                showToast('Login successful!');
+                localStorage.setItem('token', data.accessToken);
+                localStorage.setItem('role_id', data.role_id);
+                localStorage.setItem('name', data.name);
+                localStorage.setItem('userId', data.id);
+                localStorage.setItem('reg_no', data.reg_no || '');
+
+                setTimeout(() => window.location.href = '../index.html', 500);
+
+            } catch (error) {
+                showToast(error.message, 'error');
+                btn.innerHTML = 'Sign In';
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('regBtn');
+            btn.innerHTML = 'Registering...';
+            btn.disabled = true;
+
+            try {
+                await fetchAPI('/auth/register', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        name: document.getElementById('regName').value,
+                        email: document.getElementById('regEmail').value,
+                        password: document.getElementById('regPassword').value,
+                        role_id: parseInt(document.getElementById('regRole').value),
+                        reg_no: document.getElementById('regRegNo').value
+                    })
+                });
+
+                showToast('Registration successful! Please sign in.');
+                document.getElementById('toggleFormBtn').click();
+            } catch (error) {
+                showToast(error.message, 'error');
+            } finally {
+                btn.innerHTML = 'Create Account';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
