@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - NexGen DBMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .assignment-card { cursor: pointer; border: 1px solid var(--border); transition: all 0.2s; border-radius: 8px; padding: 1rem; }
+        .assignment-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow); }
+        .assignment-card.active { border-color: var(--primary); background: rgba(37,99,235,0.05); }
+        .dropzone { border: 2px dashed var(--border); border-radius: 8px; padding: 2.5rem; text-align: center; cursor: pointer; transition: 0.3s; background: rgba(0,0,0,0.02); }
+        .dropzone.dragover { border-color: var(--primary); background: rgba(37,99,235,0.08); }
+        .leaderboard-row { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border); font-size: 0.95rem; align-items: center; }
+        .leaderboard-row:last-child { border-bottom: none; }
+        .rank-circle { width: 24px; height: 24px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; }
+        .rank-1 { background: #fbbf24; color: black; }
+        .rank-2 { background: #94a3b8; color: black; }
+        .rank-3 { background: #b45309; }
+    </style>
+</head>
+<body>
+    <script src="../js/components.js"></script>
+    <script>
+        if (localStorage.getItem('role_id') !== '3') {
+            window.location.href = 'login.html';
+        }
+        let rg = localStorage.getItem('reg_no');
+        createNavbar('Student Space' + (rg ? ` • Reg No: ${rg}` : ''));
+    </script>
+
+    <div class="container" style="max-width: 1400px;">
+        <div class="grid grid-cols-4 gap-4" style="height: calc(100vh - 120px);">
+            
+            <!-- Left: Leaderboard -->
+            <div class="glass-card flex-col gap-4" style="grid-column: span 1; display:flex; max-height: 100%; overflow-y: hidden;">
+                <div class="text-center mb-2 pb-4" style="border-bottom: 1px solid var(--border);">
+                    <p class="text-muted mb-1 font-semibold text-uppercase">My Completed Assignments</p>
+                    <h2 id="statCompleted" style="color: var(--success); font-size: 3rem; margin: 0;">0</h2>
+                </div>
+                
+                <!-- Performance Box -->
+                <div class="grid grid-cols-2 gap-2 mb-4" style="text-align:center;">
+                    <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 6px;">
+                        <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">Total Marks</div>
+                        <strong id="statMarks" style="color:var(--text-main);">0/0</strong>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 6px;">
+                        <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">Percentage</div>
+                        <strong id="statPercent" style="color:var(--text-main);">0%</strong>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 6px; grid-column: span 2;">
+                        <div style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">Current Grade</div>
+                        <strong id="statGrade" style="font-size: 1.5rem; color: var(--primary);">N/A</strong>
+                    </div>
+                </div>
+
+                <h3>Leaderboard 🏆</h3>
+                <div id="leaderboardList" style="flex:1; overflow-y:auto; padding-right: 0.5rem;">
+                    <p class="text-muted text-center pt-4">Loading top students...</p>
+                </div>
+            </div>
+
+            <!-- Middle: Assignments Tracker -->
+            <div class="glass-card flex-col gap-4" style="grid-column: span 1; display:flex; max-height: 100%; overflow-y: hidden;">
+                <h3 style="margin-bottom: 0;">Assignments Tracker</h3>
+                <input type="text" id="filterInput" class="form-control" placeholder="Search subject or title..." oninput="renderAssignments()">
+                <div class="flex gap-2">
+                    <button class="btn btn-secondary w-full" style="padding: 0.25rem; font-size: 0.8rem;" onclick="setFilter('all')">All</button>
+                    <button class="btn btn-outline w-full" style="padding: 0.25rem; font-size: 0.8rem;" onclick="setFilter('pending')">Pending</button>
+                    <button class="btn btn-outline w-full" style="padding: 0.25rem; font-size: 0.8rem;" onclick="setFilter('completed')">Done</button>
+                </div>
+                <div id="assignmentsList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:0.75rem; padding-right:0.5rem;">
+                </div>
+            </div>
+
+            <!-- Right: Details & Upload UI -->
+            <div class="glass-card flex-col gap-4" style="grid-column: span 2; display:flex; max-height: 100%; overflow-y: auto;" id="assignmentDetailPanel">
+                <div style="margin: auto; text-align: center; color: var(--text-muted);">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem; opacity: 0.5;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <h3>No Assignment Selected</h3>
+                    <p>Select an assignment from the tracker to view details and submit your work.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let allAssignments = [];
+        let allSubmissions = [];
+        let currentFilter = 'all';
+        let currentFiles = [];
+
+        async function loadDashboard() {
+            try {
+                // Fetch Stats
+                const stats = await fetchAPI('/dashboard-summary');
+                document.getElementById('statCompleted').textContent = stats.completed_assignments || 0;
+                document.getElementById('statMarks').textContent = `${stats.total_marks || 0}/${stats.total_possible || 0}`;
+                document.getElementById('statPercent').textContent = `${stats.percentage || 0}%`;
+                document.getElementById('statGrade').textContent = stats.grade || 'N/A';
+
+                // Fetch Leaderboard
+                const lb = await fetchAPI('/student/leaderboard');
+                const lbList = document.getElementById('leaderboardList');
+                if (lb.length === 0) {
+                    lbList.innerHTML = '<p class="text-center text-muted">Leaderboard is empty.</p>';
+                } else {
+                    lbList.innerHTML = lb.map((st, i) => `
+                        <div class="leaderboard-row">
+                            <div class="flex items-center gap-2">
+                                <span class="rank-circle rank-${i+1}">${i+1}</span>
+                                <span style="font-weight: 500;">${st.name} ${st.id == localStorage.getItem('userId') ? '(You)' : ''}</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <strong style="color: var(--primary);">${st.total_marks}</strong>
+                                <div style="font-size: 0.7rem; color: var(--text-muted);">${st.completed_assignments} assign</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                // Fetch Assignments and Submissions
+                allAssignments = await fetchAPI('/student/assignments');
+                allSubmissions = await fetchAPI('/student/submissions');
+                
+                renderAssignments();
+            } catch (err) { showToast(err.message, 'error'); }
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            renderAssignments();
+        }
+
+        function renderAssignments() {
+            const list = document.getElementById('assignmentsList');
+            const term = document.getElementById('filterInput').value.toLowerCase();
+            
+            // Map submission status to assignments for easy filtering
+            const processedAsg = allAssignments.map(a => {
+                const sub = allSubmissions.find(s => s.assignment_id === a.id);
+                const isCompleted = sub && sub.is_draft === 0;
+                return { ...a, submission: sub, isCompleted };
+            }).filter(a => {
+                const matchesTerm = a.title.toLowerCase().includes(term) || a.subject.toLowerCase().includes(term);
+                if (!matchesTerm) return false;
+                if (currentFilter === 'pending') return !a.isCompleted;
+                if (currentFilter === 'completed') return a.isCompleted;
+                return true;
+            });
+
+            if (processedAsg.length === 0) {
+                list.innerHTML = `<p class="text-center text-muted pt-4">No assignments found.</p>`;
+                return;
+            }
+
+            list.innerHTML = processedAsg.map(a => {
+                const now = new Date();
+                const due = new Date(a.due_date);
+                const isLate = now > due && !a.isCompleted;
+                
+                let statusBadge = '';
+                if (a.isCompleted) statusBadge = '<span class="badge badge-success">Done</span>';
+                else if (a.submission && a.submission.is_draft) statusBadge = '<span class="badge badge-warning">Draft UI</span>';
+                else if (isLate) statusBadge = '<span class="badge badge-danger">Overdue</span>';
+                else statusBadge = '<span class="badge badge-primary">Pending</span>';
+
+                let statusColor = '#64748b'; // default muted
+                if (a.isCompleted) statusColor = 'var(--success)';
+                else if (isLate) statusColor = 'var(--danger)';
+                // else it's pending (could be blue or neutral)
+
+                return `
+                <div class="assignment-card" id="card-${a.id}" onclick="viewDetails('${a.id}')" style="border-left: 4px solid ${statusColor};">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 style="margin:0; font-size:1rem; line-height: 1.2;">
+                            ${a.title}
+                            ${a.is_important ? '<span style="color: var(--warning); font-size:1.2rem;" title="Important">★</span>' : ''}
+                        </h4>
+                        ${statusBadge}
+                    </div>
+                    <div style="font-size:0.8rem; color:var(--text-muted); display:flex; justify-content:space-between;">
+                        <span>${a.teacher_name} • ${a.subject}</span>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function getCountdown(dueDate) {
+            function update() {
+                const diff = new Date(dueDate) - new Date();
+                if (diff <= 0) return 'Deadline Passed';
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                return `${d}d ${h}h remaining`;
+            }
+            return update;
+        }
+
+        function viewDetails(id) {
+            document.querySelectorAll('.assignment-card').forEach(c => c.classList.remove('active'));
+            document.getElementById(`card-${id}`).classList.add('active');
+
+            const a = allAssignments.find(x => x.id === id);
+            const sub = allSubmissions.find(s => s.assignment_id === id);
+            
+            const panel = document.getElementById('assignmentDetailPanel');
+            const now = new Date();
+            const due = new Date(a.due_date);
+            const isLate = now > due;
+
+            // Header info
+            let html = `
+                <div style="border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
+                    <div class="flex justify-between items-start mb-2">
+                        <h2>${a.title}</h2>
+                        <span class="badge ${isLate ? 'badge-danger' : 'badge-primary'}" id="countdownDisplay">${isLate ? 'Deadline Passed' : 'Active'}</span>
+                    </div>
+                    <p class="mb-2"><strong>Subject:</strong> ${a.subject} | <strong>Teacher:</strong> ${a.teacher_name}</p>
+                    <p class="text-muted" style="white-space: pre-wrap; font-size: 0.95rem;">${a.description || 'No description provided.'}</p>
+                    ${a.file_url ? `<div class="mt-4"><a href="${a.file_url}" target="_blank" class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.85rem;">Download Reference File</a></div>` : ''}
+                </div>
+            `;
+
+            if (sub && sub.is_draft === 0) {
+                // Completed View
+                html += `
+                    <div style="background: rgba(16, 185, 129, 0.05); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--success);">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 style="color: var(--success); margin: 0;">✓ Submitted Successfully</h3>
+                            <span class="badge ${sub.status === 'late' ? 'badge-danger' : 'badge-success'}">${sub.status.toUpperCase()}</span>
+                        </div>
+                        <p class="mb-2 text-muted" style="font-size: 0.85rem;">Submitted At: ${new Date(sub.submitted_at).toLocaleString()}</p>
+                        <div class="mb-4">
+                            <strong>Files Attached:</strong><br>
+                            ${sub.files.map((f,i) => `<a href="${f}" target="_blank" class="badge badge-primary inline-block mt-1" style="text-decoration:none;">${sub.file_names[i] || 'File'}</a>`).join(' ')}
+                        </div>
+                        
+                        <div style="background: var(--card-bg); padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                            <h4 class="mb-2">Teacher Evaluation</h4>
+                            ${sub.graded_marks !== null ? `
+                                <div class="flex items-center gap-4">
+                                    <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary);">${sub.graded_marks}<span style="font-size: 1rem; color: var(--text-muted);">/100</span></div>
+                                    <div style="flex: 1; font-style: italic; color: var(--text-muted); border-left: 2px solid var(--border); padding-left: 1rem;">
+                                        "${sub.teacher_feedback}"
+                                    </div>
+                                </div>
+                            ` : '<p class="text-muted mb-0">Your assignment is waiting to be graded.</p>'}
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Upload Form View
+                if (sub && sub.is_draft === 1) {
+                    html += `<div class="badge badge-warning mb-4 inline-block">Draft Saved</div>`;
+                }
+                
+                if (isLate && (!sub || sub.is_draft)) {
+                    html += `
+                        <div style="background: rgba(239, 68, 68, 0.05); padding: 1rem; border-radius: 8px; border: 1px solid var(--danger); text-align: center;">
+                            <h4 style="color: var(--danger);" class="mb-2">Submission Closed</h4>
+                            <p class="text-muted text-sm mb-0">The deadline for this assignment has passed.</p>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <form id="submitForm" onsubmit="submitAssignment(event, false, '${a.id}')">
+                            <div class="dropzone" id="dropzone" 
+                                onclick="document.getElementById('fileInput').click()" 
+                                ondragover="event.preventDefault(); this.classList.add('dragover')" 
+                                ondragleave="this.classList.remove('dragover')" 
+                                ondrop="handleDrop(event)">
+                                <h4 class="mb-2" style="color: var(--primary);">Drag & Drop files here</h4>
+                                <p class="text-muted" style="font-size:0.85rem;">Or click to browse from your computer</p>
+                                <p class="text-muted" style="font-size:0.75rem; margin-top:0.5rem;" id="fileList">No files selected.</p>
+                            </div>
+                            <input type="file" id="fileInput" multiple style="display:none;" onchange="updateFileList(this.files)">
+                            
+                            <div class="flex gap-4 mt-6">
+                                <button type="button" class="btn btn-secondary w-full" onclick="submitAssignment(event, true, '${a.id}')">Save File as Draft</button>
+                                <button type="submit" class="btn btn-primary w-full">Final Submission</button>
+                            </div>
+                        </form>
+                    `;
+                }
+            }
+
+            panel.innerHTML = html;
+
+            // Realtime countdown ticker
+            if (!isLate && (!sub || sub.is_draft === 1)) {
+                const ticker = getCountdown(due);
+                const display = document.getElementById('countdownDisplay');
+                display.innerText = ticker();
+                
+                // Keep ticking but don't leak intervals if they switch assignments
+                if(window.currentInterval) clearInterval(window.currentInterval);
+                window.currentInterval = setInterval(() => {
+                    const t = ticker();
+                    display.innerText = t;
+                    if(t === 'Deadline Passed') {
+                        clearInterval(window.currentInterval);
+                        display.classList.replace('badge-primary', 'badge-danger');
+                        showToast('Deadline has passed', 'error');
+                        viewDetails(id); // refresh view to block submission
+                    }
+                }, 60000); // UI updates every minute
+            }
+        }
+
+        window.handleDrop = function(e) {
+            e.preventDefault();
+            e.target.closest('.dropzone').classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                document.getElementById('fileInput').files = e.dataTransfer.files;
+                updateFileList(e.dataTransfer.files);
+            }
+        };
+
+        window.updateFileList = function(files) {
+            currentFiles = files;
+            const text = Array.from(files).map(f => f.name).join(', ');
+            document.getElementById('fileList').innerHTML = text || 'No files selected.';
+            document.getElementById('fileList').style.color = 'var(--text-main)';
+            document.getElementById('fileList').style.fontWeight = 'bold';
+        };
+
+        window.submitAssignment = async function(e, isDraft, assignmentId) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) {
+                return showToast('Please select at least one file to upload.', 'warning');
+            }
+
+            const formData = new FormData();
+            formData.append('is_draft', isDraft ? '1' : '0');
+            Array.from(fileInput.files).forEach(f => formData.append('files', f));
+
+            try {
+                // Ensure a nice UI loader
+                const btns = e.target.closest('form').querySelectorAll('button');
+                btns.forEach(b => {b.disabled = true; b.style.opacity = '0.5'});
+
+                await fetchAPI(`/student/submit/${assignmentId}`, { method: 'POST', body: formData });
+                showToast(isDraft ? 'Draft saved successfully!' : 'Assignment submitted!');
+                
+                // Completely reload state
+                await loadDashboard();
+                viewDetails(assignmentId);
+                
+            } catch (err) { 
+                showToast(err.message, 'error');
+                const btns = e.target.closest('form').querySelectorAll('button');
+                btns.forEach(b => {b.disabled = false; b.style.opacity = '1'});
+            }
+        };
+
+        loadDashboard();
+        setInterval(loadDashboard, 30000); // Auto-refresh every 30 seconds
+    </script>
+</body>
+</html>
