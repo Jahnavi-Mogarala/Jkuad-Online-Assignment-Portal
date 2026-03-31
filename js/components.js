@@ -1,4 +1,4 @@
-const API_URL = window.location.origin.includes('localhost') ? '/api' : 'http://localhost:3000/api';
+const API_URL = window.location.protocol === 'file:' ? 'http://localhost:3000/api' : '/api';
 
 function showToast(message, type = 'success') {
     let container = document.getElementById('toast-container');
@@ -12,9 +12,9 @@ function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.textContent = message;
-    
+
     container.appendChild(toast);
-    
+
     setTimeout(() => {
         toast.style.animation = 'slideInRight 0.3s ease-out reverse forwards';
         setTimeout(() => toast.remove(), 300);
@@ -36,7 +36,7 @@ function initTheme() {
 
 async function fetchAPI(endpoint, options = {}) {
     const token = localStorage.getItem('token');
-    
+
     const defaultHeaders = {};
     if (token) defaultHeaders['Authorization'] = `Bearer ${token}`;
     if (!(options.body instanceof FormData)) defaultHeaders['Content-Type'] = 'application/json';
@@ -45,7 +45,7 @@ async function fetchAPI(endpoint, options = {}) {
         ...options,
         headers: { ...defaultHeaders, ...options.headers }
     });
-    
+
     if (res.headers.get('content-type')?.includes('text/csv')) {
         if (!res.ok) throw new Error('Export failed: ' + res.statusText);
         return res; // Return raw response for downloads
@@ -90,17 +90,17 @@ function createNavbar(title) {
         </div>
     `;
     document.body.prepend(nav);
-    
+
     const name = localStorage.getItem('name');
     if (name) document.getElementById('userNameBadge').textContent = name;
 
     const bell = document.getElementById('notificationBell');
     const dropdown = document.getElementById('notifDropdown');
-    
+
     bell.addEventListener('click', async (e) => {
         if (e.target.closest('#notifDropdown')) return;
         dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
-        
+
         if (dropdown.style.display === 'block') {
             try {
                 const notifs = await fetchAPI('/notifications');
@@ -109,14 +109,14 @@ function createNavbar(title) {
                     list.innerHTML = '<p class="text-center" style="color: var(--text-muted);">No notifications</p>';
                     return;
                 }
-                
+
                 list.innerHTML = notifs.map(n => `
                     <div style="padding: 0.75rem; border-bottom: 1px solid var(--border); background: ${n.is_read ? 'transparent' : 'rgba(37,99,235,0.05)'}">
                         <p class="mb-1" style="font-size: 0.9rem; color: var(--text-main)">${n.message}</p>
                         ${!n.is_read ? `<button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="markRead(${n.id}, event)">Mark Read</button>` : ''}
                     </div>
                 `).join('');
-            } catch(e) { console.error(e); }
+            } catch (e) { console.error(e); }
         }
     });
 
@@ -132,15 +132,14 @@ async function fetchNotifs() {
         if (unread > 0) {
             badge.style.display = 'flex';
             badge.textContent = unread;
-            showToast('You have unread notifications!', 'success');
         } else {
             badge.style.display = 'none';
         }
-    } catch(e) {}
+    } catch (e) { }
 }
 
-window.markRead = async function(id, e) {
-    if(e) e.stopPropagation();
+window.markRead = async function (id, e) {
+    if (e) e.stopPropagation();
     await fetchAPI(`/notifications/${id}/read`, { method: 'POST' });
     fetchNotifs();
     document.getElementById('notifDropdown').style.display = 'none';
