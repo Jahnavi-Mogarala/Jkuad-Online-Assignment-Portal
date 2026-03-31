@@ -40,9 +40,9 @@ router.get('/dashboard-summary', (req, res) => {
             SELECT 
                 COUNT(*) as total_completed,
                 SUM(marks) as total_marks,
-                (SELECT SUM(a.max_marks) FROM submissions s2 JOIN assignments a ON s2.assignment_id = a.id WHERE s2.student_id = ? AND s2.is_draft = 0 AND s2.marks IS NOT NULL) as total_possible
+                (COUNT(*) * 100) as total_possible
             FROM submissions WHERE student_id = ? AND is_draft = 0 AND marks IS NOT NULL
-        `, [req.userId, req.userId], (err, row) => {
+        `, [req.userId], (err, row) => {
             const possible = row.total_possible || 0;
             const obtained = row.total_marks || 0;
             const percentage = possible > 0 ? ((obtained / possible) * 100).toFixed(1) : 0;

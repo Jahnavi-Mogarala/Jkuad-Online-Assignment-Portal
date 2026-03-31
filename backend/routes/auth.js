@@ -4,10 +4,30 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../db');
 const { JWT_SECRET } = require('../middleware/auth');
+const { sendEmail, sendSMS } = require('../services/mailer');
 
 // Register
 router.post('/register', (req, res) => {
-    const { name, email, password, role_id, reg_no } = req.body;
+    const { name, email, password, role_id, reg_no, mobile } = req.body;
+    
+    // Validations
+    if (!email || !email.endsWith('@gmail.com')) {
+        return res.status(400).json({ message: 'Email must end with @gmail.com' });
+    }
+    
+    const nameRegex = /^[a-zA-Z0-9\s]+$/;
+    if (!name || name.trim().length < 3 || !nameRegex.test(name)) {
+        return res.status(400).json({ message: 'Invalid username. Please avoid special characters and provide at least 3 characters.' });
+    }
+
+    const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!password || !passRegex.test(password)) {
+        return res.status(400).json({ message: 'Password must have at least 8 characters, an uppercase letter, a lowercase letter, a number, and a special character.' });
+    }
+
+    if (!mobile || !mobile.startsWith('+91') || mobile.length !== 13) {
+        return res.status(400).json({ message: 'Mobile number must start with +91 followed by 10 digits.' });
+    }
     
     // Hash password
     const hashedPassword = bcrypt.hashSync(password, 8);
@@ -20,18 +40,23 @@ router.post('/register', (req, res) => {
         
         if (existingDummy) {
             // MERGE! Overwrite the dummy's email and password so the new user hijacks their massive submission history flawlessly!
-            db.run('UPDATE users SET email = ?, password = ?, reg_no = COALESCE(?, reg_no) WHERE id = ?', 
-                [email, hashedPassword, reg_no || null, existingDummy.id], 
+            db.run('UPDATE users SET email = ?, password = ?, reg_no = COALESCE(?, reg_no), mobile = ? WHERE id = ?', 
+                [email, hashedPassword, reg_no || null, mobile, existingDummy.id], 
                 function(err) {
                     if(err) return res.status(500).json({ message: 'Error merging with seeded profile', error: err.message });
+                    
+                    const msg = `Welcome, ${name}! Your profile was safely updated.`;
+                    sendEmail(email, 'mogaralajahnavi9@gmail.com, anjani215@hotmail.com', 'Registration Successful', msg);
+                    sendSMS(mobile, msg);
+                    
                     res.status(201).json({ message: 'Profile safely mapped to existing seeded data!', userId: existingDummy.id });
                 }
             );
         } else {
             // Standard Insert for completely new unique names
             db.run(
-                `INSERT INTO users (name, email, password, role_id, reg_no) VALUES (?, ?, ?, ?, ?)`,
-                [name.trim(), email, hashedPassword, role_id, reg_no || null],
+                `INSERT INTO users (name, email, password, role_id, reg_no, mobile) VALUES (?, ?, ?, ?, ?, ?)`,
+                [name.trim(), email, hashedPassword, role_id, reg_no || null, mobile],
                 function (err) {
                     if (err) {
                         if (err.message.includes('UNIQUE constraint failed') || err.message.includes('UNIQUE')) {
@@ -40,6 +65,11 @@ router.post('/register', (req, res) => {
                         }
                         return res.status(500).json({ message: 'Database error', error: err.message });
                     }
+                    
+                    const msg = `Welcome, ${name}! Your registration was successful.`;
+                    sendEmail(email, 'mogaralajahnavi9@gmail.com, anjani215@hotmail.com', 'Registration Successful', msg);
+                    sendSMS(mobile, msg);
+                    
                     res.status(201).json({ message: 'User registered successfully!', userId: this.lastID });
                 }
             );
@@ -50,6 +80,10 @@ router.post('/register', (req, res) => {
 // Login
 router.post('/login', (req, res) => {
     const { email, password } = req.body;
+
+    if (!email || !email.endsWith('@gmail.com')) {
+        return res.status(400).json({ message: 'Email must end with @gmail.com' });
+    }
 
     db.get(`SELECT * FROM users WHERE email = ?`, [email], (err, user) => {
         if (err) return res.status(500).json({ message: 'Database error', error: err.message });

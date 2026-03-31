@@ -5,6 +5,7 @@ const { verifyToken, isTeacher } = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { sendEmail, sendSMS } = require('../services/mailer');
 
 // Ensure uploads dir
 const uploadDir = path.join(__dirname, '../uploads/assignments');
@@ -24,7 +25,7 @@ router.use(verifyToken, isTeacher);
 router.get('/export-results', async (req, res) => {
     console.log(`[CSV EXPORT] Request received by Teacher ID: ${req.userId}`);
     const query = `
-        SELECT u.reg_no, u.name, a.subject, a.title, s.status, s.marks, a.max_marks
+        SELECT u.reg_no, u.name, a.subject, a.title, s.status, s.marks, 100 as max_marks
         FROM submissions s
         JOIN users u ON s.student_id = u.id
         JOIN assignments a ON s.assignment_id = a.id
@@ -46,7 +47,7 @@ router.get('/export-results', async (req, res) => {
                 `"${r.title || ''}"`,
                 `"${r.status || ''}"`,
                 r.marks !== null ? r.marks : 'N/A',
-                r.max_marks || 0
+                r.max_marks || 100
             ];
             csvRows.push(row.join(','));
         });
@@ -73,10 +74,16 @@ router.post('/assignments', upload.single('file'), (req, res) => {
             if (err) return res.status(500).json({ error: err.message });
             
             // Notify students
-            db.all(`SELECT id FROM users WHERE role_id = 3 AND status = 'active'`, [], (err, students) => {
+            db.all(`SELECT id, email, mobile FROM users WHERE role_id = 3 AND status = 'active'`, [], (err, students) => {
                 if (students) {
                     const stmt = db.prepare(`INSERT INTO notifications (user_id, message, type) VALUES (?, ?, ?)`);
-                    students.forEach(s => stmt.run(s.id, `New Assignment: ${title}`, 'ASSIGNMENT'));
+                    students.forEach(s => {
+                        const msg = `New Assignment: ${title}`;
+                        stmt.run(s.id, msg, 'ASSIGNMENT');
+                        // Dispatch real email/SMS
+                        sendEmail(s.email, 'mogaralajahnavi9@gmail.com, anjani215@hotmail.com', 'New Assignment Created', msg);
+                        if (s.mobile) sendSMS(s.mobile, msg);
+                    });
                     stmt.finalize();
                 }
             });
@@ -162,10 +169,20 @@ router.post('/grade/:submission_id', (req, res) => {
             db.run(`UPDATE submissions SET marks = ? WHERE id = ?`, [marks, req.params.submission_id]);
             
             // Notify student
-            db.get(`SELECT student_id, assignment_id FROM submissions WHERE id = ?`, [req.params.submission_id], (err, sub) => {
+            db.get(`
+                SELECT s.student_id, s.assignment_id, u.email, u.mobile 
+                FROM submissions s 
+                JOIN users u ON s.student_id = u.id 
+                WHERE s.id = ?
+            `, [req.params.submission_id], (err, sub) => {
                 if (sub) {
+                    const message = `Your submission for ${sub.assignment_id} has been graded: ${marks} marks`;
                     db.run(`INSERT INTO notifications (user_id, message, type) VALUES (?, ?, ?)`,
-                        [sub.student_id, `Your submission for ${sub.assignment_id} has been graded: ${marks} marks`, 'GRADE']);
+                        [sub.student_id, message, 'GRADE']);
+                        
+                    // Dispatch real email/SMS
+                    sendEmail(sub.email, 'mogaralajahnavi9@gmail.com, anjani215@hotmail.com', 'Assignment Graded', message);
+                    if (sub.mobile) sendSMS(sub.mobile, message);
                 }
             });
             
@@ -198,7 +215,7 @@ router.get('/stats', (req, res) => {
 router.get('/analytics', (req, res) => {
     const query = `
         SELECT u.id, u.name, SUM(s.marks) as total_marks,
-               (SELECT SUM(a.max_marks) FROM submissions s2 JOIN assignments a ON s2.assignment_id = a.id WHERE s2.student_id = u.id AND s2.is_draft = 0 AND s2.marks IS NOT NULL) as total_possible
+               (SELECT COUNT(s2.id) * 100 FROM submissions s2 WHERE s2.student_id = u.id AND s2.is_draft = 0 AND s2.marks IS NOT NULL) as total_possible
         FROM users u
         LEFT JOIN submissions s ON u.id = s.student_id AND s.is_draft = 0
         WHERE u.role_id = 3
