@@ -63,6 +63,10 @@ async function fetchAPI(endpoint, options = {}) {
 
         if (res.headers.get('content-type')?.includes('text/csv')) {
             if (!res.ok) throw new Error('Export failed: ' + res.statusText);
+            // Ensure blob() exists for the frontend download logic
+            if (typeof res.blob !== 'function') {
+                res.blob = async () => new Blob([await res.text()], { type: 'text/csv' });
+            }
             return res; // Return raw response for downloads
         }
 
