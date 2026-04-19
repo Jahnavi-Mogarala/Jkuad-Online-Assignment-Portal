@@ -348,7 +348,7 @@
                 btns.forEach(b => {b.disabled = true; b.style.opacity = '0.5'});
 
                 await fetchAPI(`/student/submit/${assignmentId}`, { method: 'POST', body: formData });
-                showToast(isDraft ? 'Draft saved successfully!' : 'Assignment submitted!');
+                showToast(isDraft ? 'Draft Saved Successfully!' : 'Assignment Submitted Successfully! ✅ Email notification sent to mogaralajahnavi9@gmail.com', 'success');
                 
                 // Completely reload state
                 await loadDashboard();
