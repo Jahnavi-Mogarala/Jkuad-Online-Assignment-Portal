@@ -68,8 +68,8 @@ window.handleMockRequest = async function(endpoint, options) {
         window.JKUAD_SESSION_DATA.feedback.push(newFeedback);
         saveSession();
         
-        showEmailSimulation(`New Grade Dispatched!`, `Email sent to student regarding their ${body.marks} marks.`);
-        return { message: 'Graded successfully (Session Saved)' };
+        showEmailSimulation(`New Email Dispatched! ✉️`, `Notification sent to mogaralajahnavi9@gmail.com and students.`);
+        return { message: 'Action synced and email sent successfully!' };
     }
 
     if (endpoint.includes('plagiarism-report')) {
@@ -107,8 +107,8 @@ window.handleMockRequest = async function(endpoint, options) {
         window.JKUAD_SESSION_DATA.submissions.push(newSub);
         saveSession();
         
-        showEmailSimulation(`Submission Received!`, `Confirmation email sent to Teacher Anjani and Student.`);
-        return { message: 'Submission saved (Demo Persistence)' };
+        showEmailSimulation(`Submission Received! ✅`, `Real-time Notification sent to mogaralajahnavi9@gmail.com`);
+        return { message: 'Submission saved successfully! (NexGen Mirror)' };
     }
 
     if (endpoint.includes('leaderboard')) return db.leaderboard;
