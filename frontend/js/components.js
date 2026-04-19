@@ -87,22 +87,39 @@ async function fetchAPI(endpoint, options = {}) {
     }
 }
 
-// Helper to provide fake data for the live link
+// Helper to provide fake data for the live link using the MOCK_DB snapshot
 function getMockData(endpoint, options) {
     console.log(`[MOCKING] ${endpoint}`);
     
+    // Check if the exported snapshot exists, otherwise use defaults
+    const db = window.MOCK_DB || { assignments: [], students: [], leaderboard: [] };
+
     if (endpoint === '/auth/login') {
         const body = JSON.parse(options.body || '{}');
+        const roleStr = body.email?.includes('admin') ? 'Admin' : (body.email?.includes('teacher') ? 'Teacher' : 'Student');
+        const roleId = body.email?.includes('admin') ? 1 : (body.email?.includes('teacher') ? 2 : 3);
+        
         return {
             accessToken: 'demo-token-' + Date.now(),
-            role_id: body.email?.includes('admin') ? 1 : (body.email?.includes('teacher') ? 2 : 3),
+            role_id: roleId,
             name: (body.email?.split('@')[0] || 'DEMO USER').toUpperCase() + ' (DEMO)',
             id: 999
         };
     }
 
-    if (endpoint === '/notifications') return [{ id: 1, message: 'Welcome to JKUAD Demo Portal!', is_read: 0 }];
-    if (endpoint.includes('stats') || endpoint.includes('analytics')) return { topper: 'Demo Student', lowScorers: 0, topPerformers: 1 };
+    if (endpoint.includes('assignments')) return db.assignments;
+    if (endpoint.includes('leaderboard')) return db.leaderboard;
+    if (endpoint.includes('stats')) {
+        return {
+            topper: db.leaderboard[0]?.name || 'Top Student',
+            totalStudents: db.students.length,
+            totalAssignments: db.assignments.length,
+            pendingCount: 2,
+            activeAssignments: db.assignments.length
+        };
+    }
+
+    if (endpoint === '/notifications') return [{ id: 1, message: 'Welcome to JKUAD Live Snapshot Demo!', is_read: 0 }];
     
     return [];
 }
