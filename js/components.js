@@ -139,7 +139,8 @@ function getMockData(endpoint, options) {
         return db.submissions.filter(s => s.student_id == 999 || s.student_id == studentId);
     }
 
-    if (endpoint.includes('leaderboard')) return db.leaderboard;
+    if (endpoint.includes('leaderboard')) return db.leaderboard.map(s => ({...s, marks: s.total_marks || 0}));
+    if (endpoint.includes('admin/users')) return db.students;
     if (endpoint === '/notifications') return [{ id: 1, message: 'Welcome to JKUAD Live Snapshot Demo!', is_read: 0 }];
     
     return [];
