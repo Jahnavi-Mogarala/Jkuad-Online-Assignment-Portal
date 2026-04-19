@@ -1,4 +1,4 @@
-const API_URL = 'https://jkuad-assignment-jahnavi.loca.lt/api';
+const API_URL = window.location.protocol === 'file:' ? 'http://localhost:3000/api' : '/api';
 
 function showToast(message, type = 'success') {
     let container = document.getElementById('toast-container');
@@ -35,33 +35,68 @@ function initTheme() {
 }
 
 async function fetchAPI(endpoint, options = {}) {
-    const token = localStorage.getItem('token');
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const isGitHub = window.location.hostname.includes('github.io');
+    
+    // Auto-detect Demo Mode if we are on GitHub and not using a local server
+    const useDemo = isGitHub && !isLocal;
 
-    const defaultHeaders = { 'Bypass-Tunnel-Reminder': 'true' };
+    const token = localStorage.getItem('token');
+    const defaultHeaders = {};
     if (token) defaultHeaders['Authorization'] = `Bearer ${token}`;
     if (!(options.body instanceof FormData)) defaultHeaders['Content-Type'] = 'application/json';
 
-    const res = await fetch(`${API_URL}${endpoint}`, {
-        ...options,
-        headers: { ...defaultHeaders, ...options.headers }
-    });
+    try {
+        const res = await fetch(`${API_URL}${endpoint}`, {
+            ...options,
+            headers: { ...defaultHeaders, ...options.headers }
+        });
 
-    if (res.headers.get('content-type')?.includes('text/csv')) {
-        if (!res.ok) throw new Error('Export failed: ' + res.statusText);
-        return res; // Return raw response for downloads
-    }
-
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-        if (res.status === 401 || res.status === 403) {
-            if (endpoint !== '/auth/login' && endpoint !== '/auth/register') {
-                localStorage.clear();
-                window.location.href = '../pages/login.html';
-            }
+        if (res.headers.get('content-type')?.includes('text/csv')) {
+            if (!res.ok) throw new Error('Export failed: ' + res.statusText);
+            return res; // Return raw response for downloads
         }
-        throw new Error(data.message || data.error || 'API Error');
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                if (endpoint !== '/auth/login' && endpoint !== '/auth/register') {
+                    localStorage.clear();
+                    window.location.href = '../pages/login.html';
+                }
+            }
+            throw new Error(data.message || data.error || 'API Error');
+        }
+        return data;
+
+    } catch (error) {
+        // FALLBACK TO DEMO MODE ON GITHUB PAGES
+        if (useDemo) {
+            console.warn(`[DEMO MODE] API Request to ${endpoint} failed. Providing Mock data...`);
+            
+            // Handle Login Mocking
+            if (endpoint === '/auth/login') {
+                const body = JSON.parse(options.body);
+                // Allow any login for demo
+                return {
+                    accessToken: 'demo-token-' + Date.now(),
+                    role_id: body.email.includes('admin') ? 1 : (body.email.includes('teacher') ? 2 : 3),
+                    name: body.email.split('@')[0].toUpperCase() + ' (DEMO)',
+                    id: 999
+                };
+            }
+
+            // Handle Dashboard Mocking
+            if (endpoint === '/notifications') return [{ id: 1, message: 'Welcome to JKUAD Demo Portal!', is_read: 0 }];
+            if (endpoint === '/api/student/assignments' || endpoint === '/student/assignments') return [];
+            
+            // Return empty arrays/objects for everything else to prevent UI crashes
+            if (endpoint.includes('stats') || endpoint.includes('analytics')) return { topper: 'Demo Student', lowScorers: 0, topPerformers: 1 };
+            
+            return [];
+        }
+        throw error;
     }
-    return data;
 }
 
 function logout() {
