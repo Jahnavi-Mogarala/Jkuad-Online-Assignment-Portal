@@ -1,4 +1,4 @@
-const API_URL = window.location.protocol === 'file:' ? 'http://localhost:3000/api' : '/api';
+const API_URL = 'https://jkuad-assignment-jahnavi.loca.lt/api';
 
 function showToast(message, type = 'success') {
     let container = document.getElementById('toast-container');
@@ -37,7 +37,7 @@ function initTheme() {
 async function fetchAPI(endpoint, options = {}) {
     const token = localStorage.getItem('token');
 
-    const defaultHeaders = {};
+    const defaultHeaders = { 'Bypass-Tunnel-Reminder': 'true' };
     if (token) defaultHeaders['Authorization'] = `Bearer ${token}`;
     if (!(options.body instanceof FormData)) defaultHeaders['Content-Type'] = 'application/json';
 
