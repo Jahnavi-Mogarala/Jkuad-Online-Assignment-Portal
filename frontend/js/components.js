@@ -92,11 +92,10 @@ function getMockData(endpoint, options) {
     console.log(`[MOCKING] ${endpoint}`);
     
     // Check if the exported snapshot exists, otherwise use defaults
-    const db = window.MOCK_DB || { assignments: [], students: [], leaderboard: [] };
+    const db = window.MOCK_DB || { assignments: [], students: [], submissions: [], leaderboard: [], analytics: {} };
 
     if (endpoint === '/auth/login') {
         const body = JSON.parse(options.body || '{}');
-        const roleStr = body.email?.includes('admin') ? 'Admin' : (body.email?.includes('teacher') ? 'Teacher' : 'Student');
         const roleId = body.email?.includes('admin') ? 1 : (body.email?.includes('teacher') ? 2 : 3);
         
         return {
@@ -107,18 +106,40 @@ function getMockData(endpoint, options) {
         };
     }
 
-    if (endpoint.includes('assignments')) return db.assignments;
-    if (endpoint.includes('leaderboard')) return db.leaderboard;
-    if (endpoint.includes('stats')) {
+    // Teacher & Admin Stats
+    if (endpoint.includes('stats') || endpoint.includes('dashboard-summary') || endpoint.includes('analytics')) {
         return {
-            topper: db.leaderboard[0]?.name || 'Top Student',
-            totalStudents: db.students.length,
-            totalAssignments: db.assignments.length,
-            pendingCount: 2,
-            activeAssignments: db.assignments.length
+            ...db.analytics,
+            total_users: db.students.length + 2,
+            total_assignments: db.assignments.length,
+            total_submissions: db.submissions.length,
+            completed_assignments: db.submissions.filter(s => s.student_id == localStorage.getItem('userId')).length
         };
     }
 
+    // Assignments List
+    if (endpoint.includes('assignments') && !endpoint.includes('submissions')) {
+        return db.assignments;
+    }
+
+    // Submissions
+    if (endpoint.includes('submissions')) {
+        const parts = endpoint.split('/');
+        const assignmentId = parts[3] || parts[parts.length - 2];
+        
+        if (assignmentId && assignmentId !== 'submissions') {
+            return db.submissions.filter(s => s.assignment_id == assignmentId).map(s => {
+                const student = db.students.find(u => u.id == s.student_id) || { name: 'Student' };
+                return { ...s, student_name: student.name };
+            });
+        }
+        
+        // Global student submissions
+        const studentId = localStorage.getItem('userId');
+        return db.submissions.filter(s => s.student_id == 999 || s.student_id == studentId);
+    }
+
+    if (endpoint.includes('leaderboard')) return db.leaderboard;
     if (endpoint === '/notifications') return [{ id: 1, message: 'Welcome to JKUAD Live Snapshot Demo!', is_read: 0 }];
     
     return [];
