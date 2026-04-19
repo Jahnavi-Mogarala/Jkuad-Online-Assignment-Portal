@@ -52,6 +52,12 @@ async function fetchAPI(endpoint, options = {}) {
             headers: { ...defaultHeaders, ...options.headers }
         });
 
+        // TRIGGER DEMO MODE on 404 / API Failure (common on GitHub Pages)
+        if (!res.ok && useDemo) {
+            console.warn(`[DEMO MODE] API ${endpoint} returned ${res.status}. Falling back to Mock data...`);
+            return getMockData(endpoint, options);
+        }
+
         if (res.headers.get('content-type')?.includes('text/csv')) {
             if (!res.ok) throw new Error('Export failed: ' + res.statusText);
             return res; // Return raw response for downloads
@@ -70,33 +76,32 @@ async function fetchAPI(endpoint, options = {}) {
         return data;
 
     } catch (error) {
-        // FALLBACK TO DEMO MODE ON GITHUB PAGES
+        // FALLBACK TO DEMO MODE ON NETWORK ERROR
         if (useDemo) {
-            console.warn(`[DEMO MODE] API Request to ${endpoint} failed. Providing Mock data...`);
-            
-            // Handle Login Mocking
-            if (endpoint === '/auth/login') {
-                const body = JSON.parse(options.body);
-                // Allow any login for demo
-                return {
-                    accessToken: 'demo-token-' + Date.now(),
-                    role_id: body.email.includes('admin') ? 1 : (body.email.includes('teacher') ? 2 : 3),
-                    name: body.email.split('@')[0].toUpperCase() + ' (DEMO)',
-                    id: 999
-                };
-            }
-
-            // Handle Dashboard Mocking
-            if (endpoint === '/notifications') return [{ id: 1, message: 'Welcome to JKUAD Demo Portal!', is_read: 0 }];
-            if (endpoint === '/api/student/assignments' || endpoint === '/student/assignments') return [];
-            
-            // Return empty arrays/objects for everything else to prevent UI crashes
-            if (endpoint.includes('stats') || endpoint.includes('analytics')) return { topper: 'Demo Student', lowScorers: 0, topPerformers: 1 };
-            
-            return [];
+            return getMockData(endpoint, options);
         }
         throw error;
     }
+}
+
+// Helper to provide fake data for the live link
+function getMockData(endpoint, options) {
+    console.log(`[MOCKING] ${endpoint}`);
+    
+    if (endpoint === '/auth/login') {
+        const body = JSON.parse(options.body || '{}');
+        return {
+            accessToken: 'demo-token-' + Date.now(),
+            role_id: body.email?.includes('admin') ? 1 : (body.email?.includes('teacher') ? 2 : 3),
+            name: (body.email?.split('@')[0] || 'DEMO USER').toUpperCase() + ' (DEMO)',
+            id: 999
+        };
+    }
+
+    if (endpoint === '/notifications') return [{ id: 1, message: 'Welcome to JKUAD Demo Portal!', is_read: 0 }];
+    if (endpoint.includes('stats') || endpoint.includes('analytics')) return { topper: 'Demo Student', lowScorers: 0, topPerformers: 1 };
+    
+    return [];
 }
 
 function logout() {
