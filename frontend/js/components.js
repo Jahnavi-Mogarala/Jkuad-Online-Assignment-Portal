@@ -87,11 +87,13 @@ async function fetchAPI(endpoint, options = {}) {
     }
 }
 
-// Helper to provide fake data for the live link using the MOCK_DB snapshot
-function getMockData(endpoint, options) {
-    console.log(`[MOCKING] ${endpoint}`);
+// Helper to provide fake data for the live link using the Virtual Backend Engine
+async function getMockData(endpoint, options) {
+    if (window.handleMockRequest) {
+        return await window.handleMockRequest(endpoint, options);
+    }
     
-    // Check if the exported snapshot exists, otherwise use defaults
+    // Fallback for extremely basic data if engine fails to load
     const db = window.MOCK_DB || { assignments: [], students: [], submissions: [], leaderboard: [], analytics: {} };
 
     if (endpoint === '/auth/login') {
