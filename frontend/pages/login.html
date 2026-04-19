@@ -95,10 +95,6 @@
             const btn = document.getElementById('loginBtn');
             const email = document.getElementById('loginEmail').value;
 
-            if (!email.endsWith('@gmail.com')) {
-                return showToast('Email must end with @gmail.com', 'error');
-            }
-
             btn.innerHTML = 'Authenticating...';
             btn.disabled = true;
 
