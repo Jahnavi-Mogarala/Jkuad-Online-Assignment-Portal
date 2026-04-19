@@ -1,4 +1,4 @@
-const MOCK_DB = {
+window.MOCK_DB = {
   "assignments": [
     {
       "id": "A1",
@@ -437,6 +437,728 @@ const MOCK_DB = {
       "total_marks": null
     }
   ],
+  "submissions": [
+    {
+      "id": 1,
+      "assignment_id": "A1",
+      "student_id": 3,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 18,
+      "is_draft": 0
+    },
+    {
+      "id": 2,
+      "assignment_id": "A3",
+      "student_id": 3,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 19,
+      "is_draft": 0
+    },
+    {
+      "id": 3,
+      "assignment_id": "A5",
+      "student_id": 3,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 17,
+      "is_draft": 0
+    },
+    {
+      "id": 4,
+      "assignment_id": "A1",
+      "student_id": 4,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 16,
+      "is_draft": 0
+    },
+    {
+      "id": 5,
+      "assignment_id": "A3",
+      "student_id": 4,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 17,
+      "is_draft": 0
+    },
+    {
+      "id": 6,
+      "assignment_id": "A5",
+      "student_id": 4,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 18,
+      "is_draft": 0
+    },
+    {
+      "id": 7,
+      "assignment_id": "A1",
+      "student_id": 5,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 15,
+      "is_draft": 0
+    },
+    {
+      "id": 8,
+      "assignment_id": "A3",
+      "student_id": 5,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 14,
+      "is_draft": 0
+    },
+    {
+      "id": 9,
+      "assignment_id": "A5",
+      "student_id": 5,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 16,
+      "is_draft": 0
+    },
+    {
+      "id": 10,
+      "assignment_id": "A1",
+      "student_id": 6,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 19,
+      "is_draft": 0
+    },
+    {
+      "id": 11,
+      "assignment_id": "A3",
+      "student_id": 6,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 18,
+      "is_draft": 0
+    },
+    {
+      "id": 12,
+      "assignment_id": "A5",
+      "student_id": 6,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 19,
+      "is_draft": 0
+    },
+    {
+      "id": 13,
+      "assignment_id": "A1",
+      "student_id": 7,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 14,
+      "is_draft": 0
+    },
+    {
+      "id": 14,
+      "assignment_id": "A3",
+      "student_id": 7,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 15,
+      "is_draft": 0
+    },
+    {
+      "id": 15,
+      "assignment_id": "A5",
+      "student_id": 7,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 17,
+      "is_draft": 0
+    },
+    {
+      "id": 16,
+      "assignment_id": "A1",
+      "student_id": 8,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 17,
+      "is_draft": 0
+    },
+    {
+      "id": 17,
+      "assignment_id": "A3",
+      "student_id": 8,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 16,
+      "is_draft": 0
+    },
+    {
+      "id": 18,
+      "assignment_id": "A5",
+      "student_id": 8,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 15,
+      "is_draft": 0
+    },
+    {
+      "id": 19,
+      "assignment_id": "A1",
+      "student_id": 9,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 16,
+      "is_draft": 0
+    },
+    {
+      "id": 20,
+      "assignment_id": "A3",
+      "student_id": 9,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 17,
+      "is_draft": 0
+    },
+    {
+      "id": 21,
+      "assignment_id": "A5",
+      "student_id": 9,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 7,
+      "is_draft": 0
+    },
+    {
+      "id": 22,
+      "assignment_id": "A7",
+      "student_id": 9,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 12,
+      "is_draft": 0
+    },
+    {
+      "id": 23,
+      "assignment_id": "A9",
+      "student_id": 9,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 12,
+      "is_draft": 0
+    },
+    {
+      "id": 24,
+      "assignment_id": "A1",
+      "student_id": 10,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 17,
+      "is_draft": 0
+    },
+    {
+      "id": 25,
+      "assignment_id": "A3",
+      "student_id": 10,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 15,
+      "is_draft": 0
+    },
+    {
+      "id": 26,
+      "assignment_id": "A5",
+      "student_id": 10,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 17,
+      "is_draft": 0
+    },
+    {
+      "id": 27,
+      "assignment_id": "A9",
+      "student_id": 10,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 12,
+      "is_draft": 0
+    },
+    {
+      "id": 28,
+      "assignment_id": "A1",
+      "student_id": 11,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 10,
+      "is_draft": 0
+    },
+    {
+      "id": 29,
+      "assignment_id": "A3",
+      "student_id": 11,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 7,
+      "is_draft": 0
+    },
+    {
+      "id": 30,
+      "assignment_id": "A7",
+      "student_id": 11,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 15,
+      "is_draft": 0
+    },
+    {
+      "id": 31,
+      "assignment_id": "A9",
+      "student_id": 11,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 11,
+      "is_draft": 0
+    },
+    {
+      "id": 32,
+      "assignment_id": "A3",
+      "student_id": 12,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 8,
+      "is_draft": 0
+    },
+    {
+      "id": 33,
+      "assignment_id": "A9",
+      "student_id": 12,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 7,
+      "is_draft": 0
+    },
+    {
+      "id": 34,
+      "assignment_id": "A3",
+      "student_id": 13,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 6,
+      "is_draft": 0
+    },
+    {
+      "id": 35,
+      "assignment_id": "A7",
+      "student_id": 13,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 7,
+      "is_draft": 0
+    },
+    {
+      "id": 36,
+      "assignment_id": "A9",
+      "student_id": 13,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 12,
+      "is_draft": 0
+    },
+    {
+      "id": 37,
+      "assignment_id": "A1",
+      "student_id": 14,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 16,
+      "is_draft": 0
+    },
+    {
+      "id": 38,
+      "assignment_id": "A5",
+      "student_id": 14,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 12,
+      "is_draft": 0
+    },
+    {
+      "id": 39,
+      "assignment_id": "A7",
+      "student_id": 14,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 14,
+      "is_draft": 0
+    },
+    {
+      "id": 40,
+      "assignment_id": "A9",
+      "student_id": 14,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 9,
+      "is_draft": 0
+    },
+    {
+      "id": 41,
+      "assignment_id": "A7",
+      "student_id": 15,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 8,
+      "is_draft": 0
+    },
+    {
+      "id": 42,
+      "assignment_id": "A1",
+      "student_id": 16,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 12,
+      "is_draft": 0
+    },
+    {
+      "id": 43,
+      "assignment_id": "A3",
+      "student_id": 16,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 17,
+      "is_draft": 0
+    },
+    {
+      "id": 44,
+      "assignment_id": "A5",
+      "student_id": 16,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 6,
+      "is_draft": 0
+    },
+    {
+      "id": 45,
+      "assignment_id": "A9",
+      "student_id": 16,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 16,
+      "is_draft": 0
+    },
+    {
+      "id": 46,
+      "assignment_id": "A3",
+      "student_id": 17,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 13,
+      "is_draft": 0
+    },
+    {
+      "id": 47,
+      "assignment_id": "A5",
+      "student_id": 17,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 7,
+      "is_draft": 0
+    },
+    {
+      "id": 48,
+      "assignment_id": "A9",
+      "student_id": 17,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 7,
+      "is_draft": 0
+    },
+    {
+      "id": 49,
+      "assignment_id": "A1",
+      "student_id": 18,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 11,
+      "is_draft": 0
+    },
+    {
+      "id": 50,
+      "assignment_id": "A3",
+      "student_id": 18,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 15,
+      "is_draft": 0
+    },
+    {
+      "id": 51,
+      "assignment_id": "A7",
+      "student_id": 18,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 10,
+      "is_draft": 0
+    },
+    {
+      "id": 52,
+      "assignment_id": "A9",
+      "student_id": 18,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 11,
+      "is_draft": 0
+    },
+    {
+      "id": 53,
+      "assignment_id": "A5",
+      "student_id": 19,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 8,
+      "is_draft": 0
+    },
+    {
+      "id": 54,
+      "assignment_id": "A7",
+      "student_id": 19,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 11,
+      "is_draft": 0
+    },
+    {
+      "id": 55,
+      "assignment_id": "A9",
+      "student_id": 19,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 10,
+      "is_draft": 0
+    },
+    {
+      "id": 56,
+      "assignment_id": "A1",
+      "student_id": 20,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 10,
+      "is_draft": 0
+    },
+    {
+      "id": 57,
+      "assignment_id": "A3",
+      "student_id": 20,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 15,
+      "is_draft": 0
+    },
+    {
+      "id": 58,
+      "assignment_id": "A7",
+      "student_id": 20,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 15,
+      "is_draft": 0
+    },
+    {
+      "id": 59,
+      "assignment_id": "A9",
+      "student_id": 20,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 10,
+      "is_draft": 0
+    },
+    {
+      "id": 60,
+      "assignment_id": "A1",
+      "student_id": 21,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 16,
+      "is_draft": 0
+    },
+    {
+      "id": 61,
+      "assignment_id": "A9",
+      "student_id": 21,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 16,
+      "is_draft": 0
+    },
+    {
+      "id": 62,
+      "assignment_id": "A5",
+      "student_id": 22,
+      "submitted_at": "2026-03-14T16:15:38.800Z",
+      "status": "on-time",
+      "marks": 10,
+      "is_draft": 0
+    },
+    {
+      "id": 96,
+      "assignment_id": "A4",
+      "student_id": 24,
+      "submitted_at": "2026-03-19 16:48:42",
+      "status": "on-time",
+      "marks": null,
+      "is_draft": 0
+    },
+    {
+      "id": 97,
+      "assignment_id": "A2",
+      "student_id": 26,
+      "submitted_at": "2026-03-19 16:54:13",
+      "status": "on-time",
+      "marks": null,
+      "is_draft": 0
+    },
+    {
+      "id": 98,
+      "assignment_id": "A84792",
+      "student_id": 26,
+      "submitted_at": "2026-03-19 17:33:34",
+      "status": "on-time",
+      "marks": 99,
+      "is_draft": 0
+    },
+    {
+      "id": 99,
+      "assignment_id": "A84792",
+      "student_id": 8,
+      "submitted_at": "2026-03-19 17:34:56",
+      "status": "on-time",
+      "marks": 100,
+      "is_draft": 0
+    },
+    {
+      "id": 100,
+      "assignment_id": "A10",
+      "student_id": 24,
+      "submitted_at": "2026-03-19 17:50:05",
+      "status": "on-time",
+      "marks": null,
+      "is_draft": 0
+    },
+    {
+      "id": 101,
+      "assignment_id": "A84792",
+      "student_id": 7,
+      "submitted_at": "2026-03-19 17:51:34",
+      "status": "on-time",
+      "marks": null,
+      "is_draft": 0
+    },
+    {
+      "id": 102,
+      "assignment_id": "A326207",
+      "student_id": 10,
+      "submitted_at": "2026-03-19 19:03:44",
+      "status": "on-time",
+      "marks": null,
+      "is_draft": 0
+    },
+    {
+      "id": 103,
+      "assignment_id": "A84792",
+      "student_id": 10,
+      "submitted_at": "2026-03-19 19:03:50",
+      "status": "on-time",
+      "marks": null,
+      "is_draft": 0
+    },
+    {
+      "id": 104,
+      "assignment_id": "A84792",
+      "student_id": 28,
+      "submitted_at": "2026-03-20 03:25:43",
+      "status": "on-time",
+      "marks": null,
+      "is_draft": 0
+    },
+    {
+      "id": 105,
+      "assignment_id": "A84792",
+      "student_id": 20,
+      "submitted_at": "2026-03-20 03:27:50",
+      "status": "on-time",
+      "marks": null,
+      "is_draft": 0
+    },
+    {
+      "id": 106,
+      "assignment_id": "A84792",
+      "student_id": 6,
+      "submitted_at": "2026-03-23 09:18:22",
+      "status": "on-time",
+      "marks": 98,
+      "is_draft": 0
+    },
+    {
+      "id": 107,
+      "assignment_id": "A326207",
+      "student_id": 26,
+      "submitted_at": "2026-03-24 13:19:16",
+      "status": "on-time",
+      "marks": null,
+      "is_draft": 0
+    },
+    {
+      "id": 108,
+      "assignment_id": "A84792",
+      "student_id": 31,
+      "submitted_at": "2026-03-29 16:30:22",
+      "status": "on-time",
+      "marks": 99,
+      "is_draft": 0
+    },
+    {
+      "id": 109,
+      "assignment_id": "A81423",
+      "student_id": 31,
+      "submitted_at": "2026-03-29 17:38:24",
+      "status": "on-time",
+      "marks": 98,
+      "is_draft": 0
+    },
+    {
+      "id": 110,
+      "assignment_id": "A760669",
+      "student_id": 31,
+      "submitted_at": "2026-03-29 18:02:22",
+      "status": "on-time",
+      "marks": 98,
+      "is_draft": 0
+    },
+    {
+      "id": 111,
+      "assignment_id": "A988319",
+      "student_id": 31,
+      "submitted_at": "2026-04-19 13:04:23",
+      "status": "on-time",
+      "marks": 99,
+      "is_draft": 0
+    },
+    {
+      "id": 112,
+      "assignment_id": "A375081",
+      "student_id": 31,
+      "submitted_at": "2026-04-19 16:21:01",
+      "status": "on-time",
+      "marks": 99,
+      "is_draft": 0
+    },
+    {
+      "id": 113,
+      "assignment_id": "A126562",
+      "student_id": 31,
+      "submitted_at": "2026-04-19 18:16:58",
+      "status": "on-time",
+      "marks": 100,
+      "is_draft": 0
+    }
+  ],
   "leaderboard": [
     {
       "id": 31,
@@ -620,5 +1342,14 @@ const MOCK_DB = {
       "reg_no": "363",
       "total_marks": null
     }
-  ]
+  ],
+  "analytics": {
+    "topper": "Jyothirmayee",
+    "total_assignments": 21,
+    "total_submissions": 80,
+    "average_marks": "21.3",
+    "lowScorers": 11,
+    "topPerformers": 4,
+    "missingSubmissions": 466
+  }
 };
