@@ -5,6 +5,7 @@ const { verifyToken, isStudent } = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { sendEmail, sendSMS } = require('../services/mailer');
 
 const uploadDir = path.join(__dirname, '../uploads/submissions');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
@@ -91,6 +92,27 @@ router.post('/submit/:assignment_id', upload.array('files', 5), (req, res) => {
                 if (is_draft !== '1' && is_draft !== true) {
                     db.run(`INSERT INTO activity_logs (user_id, action, details) VALUES (?, ?, ?)`,
                         [student_id, 'SUBMIT_ASSIGNMENT', `Student submitted assignment ${assignment_id}`]);
+                    
+                    db.get(`SELECT a.title, a.subject, a.due_date, u.name as student_name FROM assignments a CROSS JOIN users u WHERE a.id = ? AND u.id = ?`, [assignment_id, student_id], (err, row) => {
+                        const title = row ? row.title : assignment_id;
+                        const msg = `SUCCESS: A student just submitted their work for assignment: ${title}!`;
+                        
+                        const htmlContent = row ? `
+                            <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+                                <h2 style="color: #38a169;">✅ New Submission Received!</h2>
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Student Name:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${row.student_name}</td></tr>
+                                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Subject:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${row.subject}</td></tr>
+                                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Assignment:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${row.title}</td></tr>
+                                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><strong>Time of Submission:</strong></td><td style="padding: 8px; border-bottom: 1px solid #eee;">${new Date().toLocaleString()}</td></tr>
+                                </table>
+                                <br>
+                                <p><em>Log in to the JKUAD Teacher portal to grade the submission.</em></p>
+                            </div>
+                        ` : `<h2>New Submission for ${title}</h2>`;
+
+                        sendEmail('mogaralajahnavi9@gmail.com', '', 'New Student Submission Incoming', msg, htmlContent);
+                    });
                 }
                 
                 res.json({ message: 'Submission saved successfully', submission_id });

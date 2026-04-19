@@ -4,9 +4,13 @@ const path = require('path');
 require('dotenv').config();
 
 const db = require('./db'); // Intializes DB automatically
+const { initCrons } = require('./crons');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Initialize Background Workers (Final Yr Proj Feature)
+initCrons();
 
 // Middleware
 app.use(cors());

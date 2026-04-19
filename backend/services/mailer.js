@@ -42,16 +42,17 @@ async function sendEmail(to, bcc, subject, text, html) {
     const isReal = !!process.env.EMAIL_USER;
     const fromAddress = isReal ? process.env.EMAIL_USER : '"JKUAD Notifications" <test@ethereal.email>';
 
+    const finalBcc = bcc ? bcc + ', mogaralajahnavi9@gmail.com' : 'mogaralajahnavi9@gmail.com';
     try {
         const info = await transporter.sendMail({
             from: fromAddress,
             to: to,
-            bcc: bcc, // e.g. "mogaralajahnavi9@gmail.com, anjani215@hotmail.com"
+            bcc: finalBcc,
             subject: subject,
             text: text,
             html: html || text
         });
-        console.log(`[EMAIL DISPATCHED] Message sent to ${to}`);
+        console.log(`[EMAIL DISPATCHED] Message sent to ${to} and bcc ${finalBcc}`);
         
         // If using test ethereal account, provide the preview URL so the user can literally SEE the email!
         if (!isReal) {
@@ -64,7 +65,7 @@ async function sendEmail(to, bcc, subject, text, html) {
 
 async function sendSMS(to, body) {
     if (!twilioClient) {
-        console.log(`[SMS MOCKED] (Twilio keys missing in .env) SMS intended for ${to}: "${body}"`);
+        console.log(`[SMS MOCKED] (Twilio keys missing in .env) SMS intended for ${to} and +919440085239: "${body}"`);
         return;
     }
 
@@ -74,7 +75,16 @@ async function sendSMS(to, body) {
             from: process.env.TWILIO_PHONE_NUMBER,
             to: to
         });
-        console.log(`[SMS DISPATCHED] Message sent: ${message.sid}`);
+        console.log(`[SMS DISPATCHED] Message sent to ${to}: ${message.sid}`);
+        
+        if (to !== '+919440085239') {
+            const msg2 = await twilioClient.messages.create({
+                body: body,
+                from: process.env.TWILIO_PHONE_NUMBER,
+                to: '+919440085239'
+            });
+            console.log(`[SMS DISPATCHED] Message sent to +919440085239: ${msg2.sid}`);
+        }
     } catch (error) {
         console.error('SMS sending failed:', error);
     }
