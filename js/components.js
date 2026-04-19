@@ -35,11 +35,14 @@ function initTheme() {
 }
 
 async function fetchAPI(endpoint, options = {}) {
+    const isGitHub = window.location.hostname.toLowerCase().includes('github.io');
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const isGitHub = window.location.hostname.includes('github.io');
     
-    // Auto-detect Demo Mode if we are on GitHub and not using a local server
-    const useDemo = isGitHub && !isLocal;
+    // IF ON GITHUB AND NO LOCAL SERVER, FORCE DEMO MODE INSTANTLY
+    if (isGitHub && !isLocal) {
+        console.warn(`[GITHUB LIVE DEMO] Force-Mocking endpoint: ${endpoint}`);
+        return getMockData(endpoint, options);
+    }
 
     const token = localStorage.getItem('token');
     const defaultHeaders = {};
